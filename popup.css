@@ -1,0 +1,90 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17223b;
+  background: #f4f7fb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 360px;
+  margin: 0;
+  background: #f4f7fb;
+}
+
+.app-header {
+  padding: 20px 20px 18px;
+  color: white;
+  background: linear-gradient(135deg, #156b66, #20958a);
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .78;
+}
+
+h1 { margin: 0; font-size: 21px; letter-spacing: -.025em; }
+.subtitle { margin: 6px 0 0; font-size: 12px; line-height: 1.45; opacity: .84; }
+
+main { padding: 14px; }
+
+.card {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 4px 14px rgba(26, 45, 72, .06);
+}
+
+.card-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+h2 { margin: 0; font-size: 13px; }
+.step-label { color: #637083; font-size: 11px; font-weight: 700; }
+
+.person-name { margin: 0 0 8px; font-size: 17px; font-weight: 750; }
+.person-detail { margin: 4px 0; color: #59677a; font-size: 12px; line-height: 1.4; }
+
+button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  color: white;
+  background: #176f69;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform .12s ease, filter .12s ease;
+}
+
+button:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+button:disabled { cursor: not-allowed; opacity: .42; }
+.secondary { color: #176f69; background: #e7f5f3; }
+.ghost { color: #627086; background: #eef2f7; }
+.danger { color: #9b3434; background: #fff0f0; }
+.button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.button-row button { margin-top: 8px; }
+
+#workflow-step { margin: 3px 0 7px; color: #344258; font-size: 12px; }
+#match-review-actions { margin-top: 2px; }
+
+.status {
+  margin: 0;
+  padding: 11px 12px;
+  border-left: 3px solid #20958a;
+  border-radius: 8px;
+  color: #4e5d70;
+  background: #edf7f6;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+[hidden] { display: none !important; }

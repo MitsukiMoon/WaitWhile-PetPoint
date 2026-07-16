@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Waitwhile to PetPoint</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <p class="eyebrow">Guest transfer</p>
+      <h1>Waitwhile → PetPoint</h1>
+      <p class="subtitle">Capture a guest, check for a match, then create only when needed.</p>
+    </header>
+
+    <main>
+      <section id="person-section" class="card">
+        <div class="card-heading">
+          <h2>Waitwhile guest</h2>
+          <span class="step-label">1 · Capture</span>
+        </div>
+        <p id="person-name" class="person-name">No guest loaded</p>
+        <p id="person-phone" class="person-detail"></p>
+        <p id="person-email" class="person-detail"></p>
+        <p id="person-address" class="person-detail"></p>
+        <button id="load-waitwhile-person">Capture current Waitwhile guest</button>
+      </section>
+
+      <section id="workflow-section" class="card">
+        <div class="card-heading">
+          <h2>PetPoint match</h2>
+          <span class="step-label">2 · Check</span>
+        </div>
+        <p id="workflow-step">Step 1: Search by name</p>
+        <button id="run-search" disabled>Search by Name</button>
+        <button id="continue-search" class="secondary" disabled>Continue to Phone</button>
+        <div class="button-row">
+          <button id="reset-search" class="ghost" disabled>Restart</button>
+          <button id="fill-new-person" class="secondary" disabled>Fill New Person</button>
+        </div>
+        <div id="match-review-actions" hidden>
+          <button id="person-found">Use Selected Match</button>
+          <button id="create-new-person" class="secondary">No Match — Create Person</button>
+        </div>
+      </section>
+
+      <button id="clear-person" class="danger" disabled>Clear guest</button>
+      <p id="status" class="status" role="status" aria-live="polite">Ready. Open a guest in Waitwhile to begin.</p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

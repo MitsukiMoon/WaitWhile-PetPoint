@@ -1,0 +1,72 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f5f7;
+}
+
+header {
+  position: relative;
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #ccc;
+}
+
+.search-group {
+  display: flex;
+  align-items: center;
+  max-width: 500px;
+  border-bottom: 2px solid #555;
+}
+
+.search-icon {
+  margin-right: 8px;
+}
+
+#quickSearch {
+  flex: 1;
+  padding: 10px 4px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+#clearSearch {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+#quickSearch_listbox {
+  position: absolute;
+  top: 55px;
+  left: 16px;
+  width: 460px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: white;
+  border: 1px solid #bbb;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 15%);
+}
+
+#quickSearch_listbox li {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+#quickSearch_listbox li:hover {
+  background: #eef4ff;
+}
+
+main {
+  padding: 24px;
+}
+
+#selectedPerson {
+  max-width: 500px;
+  margin-top: 20px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #ccc;
+}

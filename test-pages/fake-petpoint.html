@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fake PetPoint Search</title>
+    <link rel="stylesheet" href="fake-petpoint.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="search-group">
+        <span class="search-icon">⌕</span>
+
+        <input
+          id="quickSearch"
+          placeholder="Search"
+          maxlength="50"
+          autocomplete="off"
+          title="Search"
+          type="text"
+          role="combobox"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          aria-controls="quickSearch_listbox"
+        />
+
+        <button id="clearSearch" type="button">Clear</button>
+      </div>
+
+      <ul id="quickSearch_listbox" role="listbox" hidden></ul>
+    </header>
+
+    <main>
+      <h1>Fake PetPoint</h1>
+
+      <p>Search by name, phone number, or address.</p>
+
+      <button id="navbarAddItem" type="button">Add</button>
+
+      <div id="globalOperations" hidden>
+        <a href="#" data-type="Person">Person</a>
+      </div>
+
+      <section id="selectedPerson" hidden>
+        <h2>Selected person</h2>
+        <p id="selectedPersonDetails"></p>
+      </section>
+
+      <section id="create-person-modal" hidden>
+        <h2>Create Person</h2>
+
+        <label for="firstName">First Name</label>
+        <input id="firstName" name="firstName" />
+
+        <label for="lastName">Last Name</label>
+        <input id="lastName" name="lastName" />
+
+        <button type="button" id="AddNewEmail">Add Email</button>
+        <div id="EmailListView"></div>
+
+        <button type="button" id="AddNewPhone">Add Phone</button>
+        <div id="PhoneNumberListView"></div>
+
+        <button type="button" id="AddNewAddress">Add Address</button>
+        <div id="PDEAddressListView"></div>
+
+        <button type="button" id="fake-save">Save</button>
+      </section>
+    </main>
+
+    <script src="fake-petpoint.js"></script>
+  </body>
+</html>
