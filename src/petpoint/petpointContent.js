@@ -1,5 +1,7 @@
 console.log("Waitwhile → PetPoint content script loaded:", window.location.href);
 
+const PETPOINT_HELPER_VERSION = "raskc-stability-v12";
+
 function waitForElement(selector, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(selector);
@@ -119,6 +121,100 @@ function setTextInput(target, value) {
     field: target,
     status: "filled"
   };
+}
+
+function delay(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function normalizeContactValue(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9@.]/g, "");
+}
+
+function findContactRow(containerSelector, inputSelector, contactValue) {
+  const expected = normalizeContactValue(contactValue);
+  const rows = Array.from(
+    document.querySelectorAll(`${containerSelector} .k-listview-item`)
+  );
+
+  return rows.find((row) => {
+    const input = row.querySelector(inputSelector);
+    return normalizeContactValue(input?.value) === expected;
+  }) || null;
+}
+
+async function markPrimaryContact(
+  containerSelector,
+  inputSelector,
+  radioSelector,
+  contactValue
+) {
+  // PetPoint re-renders contact rows after their value changes. Repeat the
+  // selection against the current node so a later render cannot undo it.
+  for (const waitMs of [150, 350, 700]) {
+    await delay(waitMs);
+
+    const row = findContactRow(containerSelector, inputSelector, contactValue);
+    const primaryRadio = row?.querySelector(radioSelector);
+
+    if (!primaryRadio) {
+      continue;
+    }
+
+    if (!primaryRadio.checked) {
+      const label = row.querySelector(`label[for='${primaryRadio.id}']`);
+      (label || primaryRadio).click();
+    }
+
+    if (!primaryRadio.checked) {
+      primaryRadio.click();
+    }
+  }
+
+  const finalRow = findContactRow(containerSelector, inputSelector, contactValue);
+  const selectedRadio = finalRow?.querySelector(radioSelector);
+
+  return selectedRadio?.checked ? "selected" : "not-selected";
+}
+
+async function refreshContactCollection(addSelector, containerSelector, inputSelector) {
+  const container = document.querySelector(containerSelector);
+  const addButton = document.querySelector(addSelector);
+
+  if (!container || !addButton) {
+    return false;
+  }
+
+  const getRows = () => Array.from(
+    document.querySelectorAll(`${containerSelector} .k-listview-item`)
+  );
+  const originalCount = getRows().length;
+
+  simulateClick(addButton);
+
+  try {
+    await waitForMatchingElement(() => {
+      const rows = getRows();
+      return rows.length > originalCount ? rows.at(-1) : null;
+    });
+
+    const rows = getRows();
+    const temporaryRow = rows.find((row) => {
+      const input = row.querySelector(inputSelector);
+      return input && !normalizeContactValue(input.value);
+    });
+    const deleteButton = temporaryRow?.querySelector(".delete-button, [data-bind*='remove']");
+
+    if (!deleteButton) {
+      return false;
+    }
+
+    simulateClick(deleteButton);
+    await waitForMatchingElement(() => getRows().length === originalCount ? container : null);
+    return true;
+  } catch (_error) {
+    return false;
+  }
 }
 
 function setSearchValue(value) {
@@ -249,6 +345,18 @@ async function fillEmail(person) {
   if (result.status === "filled") {
     const focusTarget = container?.querySelector("#EMailAddress0, input[id$='EmailAddress0']") ?? input;
     setTextInput(focusTarget, person.email);
+    focusTarget.blur();
+    await refreshContactCollection(
+      "#AddNewEmail",
+      "#EmailListView",
+      "input[id^='EMailAddress']"
+    );
+    await markPrimaryContact(
+      "#EmailListView",
+      "input[id^='EMailAddress']",
+      "input[type='radio'][name='PrimaryEmailRadio'], input[id^='PrimaryEmail']",
+      person.email
+    );
   }
 
   return {
@@ -277,6 +385,18 @@ async function fillPhone(person) {
   if (result.status === "filled") {
     const focusTarget = container?.querySelector("#PhoneNumber0, input[id$='PhoneNumber0']") ?? input;
     setTextInput(focusTarget, person.phone);
+    focusTarget.blur();
+    await refreshContactCollection(
+      "#AddNewPhone",
+      "#PhoneNumberListView",
+      "input[id^='PhoneNumber']"
+    );
+    await markPrimaryContact(
+      "#PhoneNumberListView",
+      "input[id^='PhoneNumber']",
+      "input[type='radio'][name='PrimaryPhoneRadio'], input[id^='PrimaryPhone']",
+      person.phone
+    );
   }
 
   return {
@@ -332,16 +452,159 @@ async function fillCompletePersonForm(person) {
   return results;
 }
 
-async function openCreatePersonForm() {
-  const addButton = document.querySelector("#navbarAddItem");
+function waitForMatchingElement(findElement, timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    const existing = findElement();
+    if (existing) {
+      resolve(existing);
+      return;
+    }
 
-  if (!addButton) {
-    throw new Error("PetPoint Add button was not found.");
+    const observer = new MutationObserver(() => {
+      const element = findElement();
+      if (element) {
+        observer.disconnect();
+        clearTimeout(timeoutId);
+        resolve(element);
+      }
+    });
+
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    const timeoutId = setTimeout(() => {
+      observer.disconnect();
+      reject(new Error("Timed out waiting for the requested PetPoint option."));
+    }, timeoutMs);
+  });
+}
+
+function formatDate(date) {
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+}
+
+function getRaskcDates(now = new Date()) {
+  const issued = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const expires = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+  return { issued: formatDate(issued), expires: formatDate(expires) };
+}
+
+async function selectPetIdType(typeName) {
+  const input = await waitForElement("#PetIDType");
+  const picker = input.closest(".k-picker") || input.parentElement;
+  if (!picker) throw new Error("The PetPoint Pet ID Type control was not found.");
+
+  const trigger = picker.querySelector('[role="button"]') || picker;
+  simulateClick(trigger);
+  const listboxId = picker.getAttribute("aria-controls") || "PetIDType_listbox";
+  const option = await waitForMatchingElement(() => {
+    const listbox = document.getElementById(listboxId);
+    return [...(listbox?.querySelectorAll('[role="option"], li') ?? [])]
+      .find((item) => item.textContent.trim().toUpperCase() === typeName.toUpperCase());
+  }).catch(() => null);
+  if (!option) throw new Error(`The ${typeName} option did not load in PetPoint. Close the Pet ID modal and try again.`);
+  simulateClick(option);
+  await delay(400);
+}
+
+async function fillRaskcPetIdForm(tagId) {
+  if (!document.querySelector("#PetIDNumber")) {
+    let addPetIdButton = document.querySelector("#AddAnimalPetID");
+    const identificationPanel = document.querySelector("#identification");
+    const identificationTab = document.querySelector(
+      '#identification-tab, #identifications-tab, [role="tab"][aria-controls="identification"], a[href="#identification"]'
+    ) || [...document.querySelectorAll('[role="tab"], a, button')].find((element) =>
+      /^identifications?$/i.test(element.textContent.trim())
+    );
+    const identificationIsActive = (
+      identificationPanel?.classList.contains("active") && identificationPanel?.classList.contains("show")
+    ) || identificationTab?.getAttribute("aria-selected") === "true" || identificationTab?.classList.contains("active");
+
+    if (!identificationIsActive) {
+      if (!identificationTab) {
+        throw new Error("The animal's Identifications tab was not found in PetPoint. Open an animal profile and try again.");
+      }
+
+      simulateClick(identificationTab);
+      // PetPoint loads this tab asynchronously. Clicking Add before its data
+      // finishes binding can produce an intermittent server error.
+      await delay(800);
+    }
+
+    if (!addPetIdButton || addPetIdButton.offsetParent === null) {
+      addPetIdButton = await waitForMatchingElement(() => {
+        const button = document.querySelector("#AddAnimalPetID");
+        return button?.offsetParent !== null ? button : null;
+      }, 10000);
+    }
+
+    await delay(350);
+    simulateClick(addPetIdButton);
+    await waitForElement("#PetIDNumber");
+    await delay(600);
   }
 
-  simulateClick(addButton);
+  const { issued, expires } = getRaskcDates();
+  await selectPetIdType("RASKC Tag");
 
-  const personButton = await waitForElement('#globalOperations a[data-type="Person"]');
+  const fields = [
+    ["input#PetIDNumber", tagId],
+    ["input#PetIDIssuer", "SH"],
+    ["input#PetIDIssuerPhone", "4256410080"],
+    ["input#PetIDIssued", issued],
+    ["input#PetIDExpires", expires]
+  ];
+  const results = [];
+
+  for (const [selector, value] of fields) {
+    results.push(setTextInput(selector, value));
+    await delay(200);
+  }
+  const missing = results.filter((result) => result.status === "missing");
+  if (missing.length) throw new Error("One or more PetPoint Pet ID fields were not found.");
+
+  return {
+    success: true,
+    message: `RASKC tag ${tagId} filled. Issued ${issued}; expires ${expires}. Review and save in PetPoint.`
+  };
+}
+
+async function openCreatePersonForm() {
+  const addButton = document.querySelector("#navbarAddItem");
+  let personButton;
+
+  if (addButton) {
+    simulateClick(addButton);
+    personButton = await waitForElement('#globalOperations a[data-type="Person"], #globalOperations [data-type="Person"]');
+  } else {
+    const quickSearch = document.querySelector("#quickSearch");
+    if (!quickSearch) {
+      throw new Error("Neither the PetPoint Add button nor search bar was found.");
+    }
+
+    simulateClick(quickSearch);
+    quickSearch.focus();
+
+    personButton = await waitForMatchingElement(() => {
+      const attributedAction = [...document.querySelectorAll(
+        '#quickSearch_listbox [data-type="Person"], #searchArea [data-type="Person"], #globalOperations [data-type="Person"]'
+      )].find((element) => element.offsetParent !== null);
+      if (attributedAction) return attributedAction;
+
+      const personsHeader = [...document.querySelectorAll("#quickSearch_listbox .QSHeader")]
+        .find((header) => header.offsetParent !== null && /^persons?$/i.test(
+          header.querySelector("h4")?.textContent.trim() ?? ""
+        ));
+      if (personsHeader) return personsHeader;
+
+      return [...document.querySelectorAll(
+        '#quickSearch_listbox button, #quickSearch_listbox a, #searchArea button, #searchArea a, #globalOperations button, #globalOperations a'
+      )].find((element) => element.offsetParent !== null && /^persons?$/i.test(element.textContent.trim()));
+    }).catch(() => null);
+
+    if (!personButton) {
+      throw new Error("The Person action did not appear from the PetPoint search bar.");
+    }
+  }
+
   simulateClick(personButton);
 
   await waitForElement("#firstName");
@@ -352,7 +615,170 @@ async function openCreatePersonForm() {
   };
 }
 
+function findVaccineExpressLink() {
+  return [...document.querySelectorAll("a.report-link")].find((link) => {
+    const reportUrl = link.getAttribute("report-url") || "";
+    const label = link.textContent.replace(/\s+/g, " ").trim();
+    return reportUrl.includes("SSRSID=MedicalVaccineExpress") ||
+      label === "Medical: Vaccine Express";
+  }) || null;
+}
+
+async function selectVaccineExpress() {
+  const vaccineExpressLink = await waitForMatchingElement(findVaccineExpressLink, 10000);
+
+  await chrome.storage.local.set({
+    rabiesWorkflowStep: {
+      step: "configure-vaccine-express",
+      startedAt: Date.now()
+    }
+  });
+  setTimeout(() => simulateClick(vaccineExpressLink), 75);
+
+  return {
+    success: true,
+    message: "Opening Medical: Vaccine Express."
+  };
+}
+
+async function selectKendoOption(inputSelector, optionText) {
+  const input = await waitForElement(inputSelector, 10000);
+  const dropdown = input.closest(".k-dropdown") || input.parentElement;
+
+  if (!dropdown) {
+    throw new Error(`The ${inputSelector} dropdown was not found.`);
+  }
+
+  simulateClick(dropdown.querySelector(".k-dropdown-wrap") || dropdown);
+
+  const option = await waitForMatchingElement(() => {
+    return [...document.querySelectorAll(`${inputSelector}_listbox li`)].find((item) => {
+      return item.offsetParent !== null &&
+        item.textContent.replace(/\s+/g, " ").trim() === optionText;
+    });
+  }, 5000);
+
+  simulateClick(option);
+}
+
+function formatReportDate(date) {
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} 12:00 AM`;
+}
+
+async function configureVaccineExpressReport() {
+  await waitForElement("#AnimalStatus", 10000);
+
+  await selectKendoOption("#AnimalStatus", "Active");
+  await selectKendoOption("#BasedOn", "Record Created Date");
+  await selectKendoOption("#BasedOnStatus", "Completed");
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  setTextInput("#BasedOnDateFrom", formatReportDate(weekAgo));
+
+  await selectKendoOption("#AnimalTagType", "Rabies Tag");
+  await selectKendoOption("#With_WithoutOption", "Animal Without above Tag");
+
+  await chrome.storage.local.remove("rabiesWorkflowStep");
+  await chrome.storage.local.set({ rabiesWorkflowConfiguredAt: Date.now() });
+
+  return {
+    success: true,
+    message: "Vaccine Express is configured for active animals without a Rabies Tag. Review before running the report."
+  };
+}
+
+async function openRabiesReportWebsite() {
+  if (document.querySelector("#AnimalStatus") && document.querySelector("#BasedOn")) {
+    return configureVaccineExpressReport();
+  }
+
+  if (findVaccineExpressLink()) {
+    return selectVaccineExpress();
+  }
+
+  const reportsToggle = document.querySelector("#ReportsNavbarDropdown");
+
+  if (!reportsToggle) {
+    throw new Error("The PetPoint Reports menu was not found.");
+  }
+
+  simulateClick(reportsToggle);
+
+  const reportWebsiteLink = await waitForMatchingElement(() => {
+    return [...document.querySelectorAll(".dropdown-menu a[href*='ExternalReportApp.aspx']")]
+      .find((link) => link.offsetParent !== null);
+  });
+
+  // Navigate in the current tab so the workflow is not blocked by the
+  // browser's popup protection for PetPoint's target=_blank link.
+  await chrome.storage.local.set({
+    rabiesWorkflowStep: {
+      step: "open-vaccine-express",
+      startedAt: Date.now()
+    }
+  });
+
+  setTimeout(() => {
+    window.location.assign(reportWebsiteLink.href);
+  }, 75);
+
+  return {
+    success: true,
+    message: "Opening Report Website, then Medical: Vaccine Express."
+  };
+}
+
+async function continueRabiesWorkflow() {
+  const { rabiesWorkflowStep } = await chrome.storage.local.get("rabiesWorkflowStep");
+
+  if (!rabiesWorkflowStep?.step) {
+    return;
+  }
+
+  if (Date.now() - Number(rabiesWorkflowStep.startedAt || 0) > 120000) {
+    await chrome.storage.local.remove("rabiesWorkflowStep");
+    return;
+  }
+
+  try {
+    if (rabiesWorkflowStep.step === "open-vaccine-express") {
+      await selectVaccineExpress();
+    } else if (rabiesWorkflowStep.step === "configure-vaccine-express") {
+      await configureVaccineExpressReport();
+    }
+  } catch (error) {
+    console.error("Unable to continue to Vaccine Express:", error);
+    await chrome.storage.local.remove("rabiesWorkflowStep");
+  }
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "PETPOINT_PING") {
+    sendResponse({ success: true, version: PETPOINT_HELPER_VERSION });
+    return false;
+  }
+
+  if (message.type === "PETPOINT_FILL_RASKC_ID") {
+    fillRaskcPetIdForm(message.tagId)
+      .then((response) => sendResponse(response))
+      .catch((error) => sendResponse({
+        success: false,
+        message: error instanceof Error ? error.message : "Unable to fill the RASKC Pet ID form."
+      }));
+    return true;
+  }
+
+  if (message.type === "PETPOINT_OPEN_RABIES_REPORTS") {
+    openRabiesReportWebsite()
+      .then((response) => sendResponse(response))
+      .catch((error) => sendResponse({
+        success: false,
+        message: error instanceof Error ? error.message : "Unable to open the PetPoint Report Website."
+      }));
+    return true;
+  }
+
   if (message.type === "PETPOINT_SEARCH") {
     try {
       setSearchValue(message.query);
@@ -413,3 +839,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   return true;
 });
+
+continueRabiesWorkflow();

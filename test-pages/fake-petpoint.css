@@ -11,6 +11,13 @@ header {
   border-bottom: 1px solid #ccc;
 }
 
+.fake-nav { position: relative; margin-bottom: 14px; }
+.fake-nav button { padding: 8px 14px; border: 0; border-radius: 5px; color: white; background: #2f628f; cursor: pointer; }
+.dropdown-menu { position: absolute; z-index: 2; top: 38px; left: 0; min-width: 190px; border: 1px solid #bbb; background: white; box-shadow: 0 4px 10px rgb(0 0 0 / 15%); }
+.dropdown-menu ul { margin: 0; padding: 6px 0; list-style: none; }
+.dropdown-menu a { display: block; padding: 9px 12px; color: #243a52; text-decoration: none; }
+.dropdown-menu a:hover { background: #eef4ff; }
+
 .search-group {
   display: flex;
   align-items: center;
@@ -70,3 +77,12 @@ main {
   background: white;
   border: 1px solid #ccc;
 }
+
+.report-placeholder { max-width: 620px; padding: 18px; border: 1px solid #ccc; background: white; }
+.mock-report-form { display: grid; grid-template-columns: 180px 1fr; gap: 10px 14px; align-items: center; }
+.mock-report-form label { font-weight: 700; }
+.mock-report-form > input, .k-dropdown { min-height: 38px; padding: 9px; border: 1px solid #aaa; background: white; }
+.k-dropdown { cursor: pointer; }
+.mock-options { grid-column: 2; margin: -10px 0 0; padding: 0; border: 1px solid #aaa; list-style: none; background: white; }
+.mock-options li { padding: 8px; cursor: pointer; }
+.mock-options li:hover { background: #eef4ff; }

@@ -1,5 +1,10 @@
 console.log("Waitwhile to PetPoint extractor loaded:", window.location.href);
 
+if (["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+  document.documentElement.dataset.waitwhileExtensionConnected = "true";
+  window.dispatchEvent(new CustomEvent("waitwhile-extension-connected"));
+}
+
 function getDisplayValue(element) {
   return element?.innerText?.replace(/\s+/g, " ").trim() ?? "";
 }
@@ -23,7 +28,11 @@ function readVisitDetails() {
       const key = getDisplayValue(keyElement).toLowerCase();
       const value = getDisplayValue(valueElement);
 
-      if (key && value && value.toLowerCase() !== "add") {
+      // Waitwhile may show the same label more than once. For example, the
+      // guest's address has State = WA and the visit metadata later has
+      // State = Waitlist. Keep the first displayed value so the address state
+      // is not overwritten by the visit status.
+      if (key && value && value.toLowerCase() !== "add" && !(key in details)) {
         details[key] = value;
       }
     }
@@ -57,7 +66,7 @@ function extractPerson() {
     address2: details["address 2"] ?? "",
     city: details.city ?? "",
     state: details.state ?? "",
-    postalCode: details["postal code"] ?? details.zip ?? details["zip code"] ?? "",
+    postalCode: details["postal code"] ?? details.zipcode ?? details.zip ?? details["zip code"] ?? "",
     waitwhileId: details.id ?? null,
     notes: details.notes ?? ""
   };

@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "demo": "node test-pages/server.js",
     "test:normalize": "node src/matching/normalize.test.js",
     "test:matching": "node src/matching/scorePerson.test.js",
     "test:classification": "node src/matching/classifyPersonMatch.test.js",
     "test:search": "node src/petpoint/searchStrategy.test.js",
-    "test": "npm run test:normalize && npm run test:matching && npm run test:classification && npm run test:search"
+    "test:raskc": "node src/raskc/raskcService.test.js",
+    "test": "npm run test:normalize && npm run test:matching && npm run test:classification && npm run test:search && npm run test:raskc"
   }
 }

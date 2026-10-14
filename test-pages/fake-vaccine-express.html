@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fake Vaccine Express</title>
+    <link rel="stylesheet" href="/test-pages/fake-petpoint.css" />
+  </head>
+  <body>
+    <main>
+      <p>Local test environment</p>
+      <h1>Medical: Vaccine Express</h1>
+      <section class="report-placeholder">
+        <h2>Vaccine report opened</h2>
+        <form id="InterfaceForm" class="mock-report-form">
+          <label>Animal Status</label>
+          <span class="k-dropdown"><span class="k-dropdown-wrap"><span class="k-input">--All--</span></span><input id="AnimalStatus" hidden /></span>
+          <ul id="AnimalStatus_listbox" class="mock-options" hidden><li>--All--</li><li>Active</li><li>Inactive</li><li>Deceased</li></ul>
+
+          <label>Based On</label>
+          <span class="k-dropdown"><span class="k-dropdown-wrap"><span class="k-input">Status and Status Date</span></span><input id="BasedOn" hidden /></span>
+          <ul id="BasedOn_listbox" class="mock-options" hidden><li>Status and Status Date</li><li>Record Created Date</li><li>Record Updated Date</li><li>Review Date</li></ul>
+
+          <label>Based On Status</label>
+          <span class="k-dropdown"><span class="k-dropdown-wrap"><span class="k-input">--All--</span></span><input id="BasedOnStatus" hidden /></span>
+          <ul id="BasedOnStatus_listbox" class="mock-options" hidden><li>--All--</li><li>Completed</li><li>Pending</li><li>Scheduled</li></ul>
+
+          <label for="BasedOnDateFrom">Based On From</label>
+          <input id="BasedOnDateFrom" type="text" />
+
+          <label>Animal Tag Type</label>
+          <span class="k-dropdown"><span class="k-dropdown-wrap"><span class="k-input">--All--</span></span><input id="AnimalTagType" hidden /></span>
+          <ul id="AnimalTagType_listbox" class="mock-options" hidden><li>--All--</li><li>PetPoint Transfer Reference</li><li>Previous Name</li><li>Rabies Tag</li><li>RASKC Tag</li></ul>
+
+          <label>Tag inclusion</label>
+          <span class="k-dropdown"><span class="k-dropdown-wrap"><span class="k-input">Animal With above Tag</span></span><input id="With_WithoutOption" hidden /></span>
+          <ul id="With_WithoutOption_listbox" class="mock-options" hidden><li>Animal With above Tag</li><li>Animal Without above Tag</li></ul>
+        </form>
+      </section>
+    </main>
+    <script>
+      for (const dropdown of document.querySelectorAll(".k-dropdown")) {
+        const input = dropdown.querySelector("input");
+        const list = document.querySelector(`#${input.id}_listbox`);
+        dropdown.addEventListener("click", () => { list.hidden = false; });
+        for (const option of list.querySelectorAll("li")) {
+          option.addEventListener("click", (event) => {
+            event.stopPropagation();
+            input.value = option.textContent.trim();
+            dropdown.querySelector(".k-input").textContent = input.value;
+            list.hidden = true;
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

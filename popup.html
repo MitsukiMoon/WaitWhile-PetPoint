@@ -3,18 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Waitwhile to PetPoint</title>
+    <title>Waitwhile Adopter Tools</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <header class="app-header">
-      <p class="eyebrow">Guest transfer</p>
-      <h1>Waitwhile → PetPoint</h1>
-      <p class="subtitle">Capture a guest, check for a match, then create only when needed.</p>
+      <p class="eyebrow">Shelter workflow</p>
+      <h1>Adopter tools</h1>
+      <p class="subtitle">Capture once from Waitwhile, then choose what you need to do.</p>
     </header>
 
     <main>
-      <section id="person-section" class="card">
+      <nav class="workspace-menu" aria-label="Work area">
+        <button class="workspace-button active" data-workspace="adoptions-workspace" aria-pressed="true">Adoptions</button>
+        <button class="workspace-button" data-workspace="admin-workspace" aria-pressed="false">Admin work</button>
+      </nav>
+
+      <div id="adoptions-workspace" class="workspace-view">
+        <nav class="action-menu" aria-label="Adoption actions">
+          <button class="menu-button active" data-view="petpoint-view" aria-pressed="true">Person profile</button>
+          <button class="menu-button" data-view="raskc-view" aria-pressed="false">RASKC license</button>
+        </nav>
+
+        <section id="person-section" class="card">
         <div class="card-heading">
           <h2>Waitwhile guest</h2>
           <span class="step-label">1 · Capture</span>
@@ -24,27 +35,62 @@
         <p id="person-email" class="person-detail"></p>
         <p id="person-address" class="person-detail"></p>
         <button id="load-waitwhile-person">Capture current Waitwhile guest</button>
-      </section>
+        </section>
 
-      <section id="workflow-section" class="card">
-        <div class="card-heading">
-          <h2>PetPoint match</h2>
-          <span class="step-label">2 · Check</span>
-        </div>
-        <p id="workflow-step">Step 1: Search by name</p>
-        <button id="run-search" disabled>Search by Name</button>
-        <button id="continue-search" class="secondary" disabled>Continue to Phone</button>
-        <div class="button-row">
-          <button id="reset-search" class="ghost" disabled>Restart</button>
-          <button id="fill-new-person" class="secondary" disabled>Fill New Person</button>
-        </div>
-        <div id="match-review-actions" hidden>
-          <button id="person-found">Use Selected Match</button>
+        <div id="petpoint-view" class="action-view">
+        <section id="workflow-section" class="card">
+          <div class="card-heading">
+            <h2>PetPoint match</h2>
+            <span class="step-label">2 · Check</span>
+          </div>
+          <p id="workflow-step">Step 1: Search by name</p>
+          <button id="run-search" disabled>Search by Name</button>
+          <button id="continue-search" class="secondary" disabled>Continue to Phone</button>
+          <div class="button-row">
+            <button id="reset-search" class="ghost" disabled>Restart</button>
+            <button id="fill-new-person" class="secondary" disabled>Fill New Person</button>
+          </div>
+          <div id="match-review-actions" hidden>
+            <button id="person-found">Use Selected Match</button>
+          </div>
           <button id="create-new-person" class="secondary">No Match — Create Person</button>
+        </section>
         </div>
-      </section>
 
-      <button id="clear-person" class="danger" disabled>Clear guest</button>
+        <div id="raskc-view" class="action-view" hidden>
+        <section class="card">
+          <div class="card-heading">
+            <h2>RASKC license-area check</h2>
+            <span class="step-label">Address only</span>
+          </div>
+          <p class="helper-text">Checks which agency provides pet licenses for the captured guest's address.</p>
+          <p id="raskc-address" class="address-preview">Capture a Waitwhile guest with an address first.</p>
+          <button id="check-raskc" disabled>Check license provider</button>
+          <div id="raskc-result" class="result-box" hidden></div>
+          <div id="raskc-id-actions" class="raskc-id-actions" hidden>
+            <label for="raskc-tag-id">RASKC tag ID</label>
+            <input id="raskc-tag-id" type="text" inputmode="numeric" autocomplete="off" placeholder="Enter the tag number" />
+            <button id="fill-raskc-pet-id" disabled>Add and fill PetPoint ID</button>
+            <p>Open the animal profile in PetPoint. The extension opens Identifications, presses the Pet ID plus button, fills the modal, and leaves Save for review.</p>
+          </div>
+        </section>
+        </div>
+
+        <button id="clear-person" class="danger" disabled>Clear guest</button>
+      </div>
+
+      <div id="admin-workspace" class="workspace-view" hidden>
+        <section class="card">
+          <div class="card-heading">
+            <h2>Rabies tags</h2>
+            <span class="step-label">Admin</span>
+          </div>
+          <p class="helper-text">Open PetPoint's Medical: Vaccine Express report to begin assigning rabies tags.</p>
+          <button id="open-rabies-reports">Open Vaccine Express</button>
+          <p class="admin-note">Open PetPoint first. The extension selects Reports, opens Report Website, and continues into Medical: Vaccine Express.</p>
+        </section>
+      </div>
+
       <p id="status" class="status" role="status" aria-live="polite">Ready. Open a guest in Waitwhile to begin.</p>
     </main>
     <script type="module" src="popup.js"></script>

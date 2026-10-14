@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fake PetPoint Report Website</title>
+    <link rel="stylesheet" href="/test-pages/fake-petpoint.css" />
+  </head>
+  <body>
+    <main>
+      <p>Local test environment</p>
+      <h1>PetPoint Report Website</h1>
+      <section class="report-placeholder">
+        <h2>Rabies-tag workflow</h2>
+        <p>The Reports → Report Website navigation succeeded.</p>
+        <ul class="report-list list-group row" data-role="tooltip">
+          <li class="report-list-item col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <a class="report-link" report-url="interface?ReportId=1157&amp;SSRSID=MedicalVaccineExpress&amp;ReportName=Medical%3a+Vaccine+Express" href="#">Medical: Vaccine Express</a>
+          </li>
+        </ul>
+      </section>
+    </main>
+    <script>
+      document.querySelector("a[report-url*='MedicalVaccineExpress']").addEventListener("click", (event) => {
+        event.preventDefault();
+        window.location.assign("/test-pages/fake-vaccine-express.html");
+      });
+    </script>
+  </body>
+</html>

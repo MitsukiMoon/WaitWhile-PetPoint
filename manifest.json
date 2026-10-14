@@ -1,25 +1,30 @@
 {
   "manifest_version": 3,
-  "name": "Waitwhile to PetPoint",
-  "version": "0.1.0",
-  "description": "Helps transfer and validate adopter information between Waitwhile and PetPoint.",
+  "name": "Waitwhile Adopter Tools",
+  "version": "0.3.0",
+  "description": "Helps shelter staff transfer and validate adopter information from Waitwhile.",
   "permissions": [
     "storage",
     "tabs"
   ],
   "host_permissions": [
     "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
     "https://sms.petpoint.com/*",
-    "https://*.waitwhile.com/*"
+    "https://*.waitwhile.com/*",
+    "https://geocode.arcgis.com/*",
+    "https://api.kingcounty.gov/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Waitwhile to PetPoint"
+    "default_title": "Waitwhile Adopter Tools"
   },
   "content_scripts": [
     {
       "matches": [
-        "https://*.waitwhile.com/*"
+        "https://*.waitwhile.com/*",
+        "http://localhost:3000/test-pages/fake-waitwhile.html*",
+        "http://127.0.0.1:3000/test-pages/fake-waitwhile.html*"
       ],
       "js": [
         "src/waitwhile/waitwhileContent.js"

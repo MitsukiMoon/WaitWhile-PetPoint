@@ -33,6 +33,11 @@ h1 { margin: 0; font-size: 21px; letter-spacing: -.025em; }
 
 main { padding: 14px; }
 
+.workspace-menu, .action-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; padding: 4px; border-radius: 11px; background: #e7edf3; }
+.workspace-button, .menu-button { min-height: 34px; margin: 0; color: #5d6b7e; background: transparent; }
+.workspace-button.active, .menu-button.active { color: white; background: #176f69; box-shadow: 0 2px 8px rgba(23, 111, 105, .22); }
+.action-menu { margin-top: -2px; background: #edf2f6; }
+
 .card {
   margin-bottom: 12px;
   padding: 14px;
@@ -75,6 +80,17 @@ button:disabled { cursor: not-allowed; opacity: .42; }
 
 #workflow-step { margin: 3px 0 7px; color: #344258; font-size: 12px; }
 #match-review-actions { margin-top: 2px; }
+.helper-text { margin: 3px 0 10px; color: #59677a; font-size: 12px; line-height: 1.45; }
+.address-preview { margin: 0; padding: 10px; border-radius: 8px; color: #344258; background: #f4f7fb; font-size: 12px; line-height: 1.4; }
+.result-box { margin-top: 10px; padding: 11px; border: 1px solid #cfe6e3; border-radius: 9px; color: #24514e; background: #edf7f6; font-size: 12px; line-height: 1.45; }
+.result-box.not-raskc { border-color: #eadbb7; color: #6d5420; background: #fff8e8; }
+.result-box.error { border-color: #efc7c7; color: #8a3434; background: #fff0f0; }
+.raskc-id-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+.raskc-id-actions label { display: block; margin-bottom: 6px; color: #344258; font-size: 12px; font-weight: 750; }
+.raskc-id-actions input { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid #cfd8e4; border-radius: 8px; color: #17223b; background: white; font: inherit; font-size: 13px; }
+.raskc-id-actions input:focus { outline: 2px solid #8ed4ce; border-color: #20958a; }
+.raskc-id-actions p { margin: 8px 0 0; color: #637083; font-size: 10px; line-height: 1.45; }
+.admin-note { margin: 9px 0 0; color: #637083; font-size: 10px; line-height: 1.45; }
 
 .status {
   margin: 0;

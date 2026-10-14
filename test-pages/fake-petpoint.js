@@ -58,6 +58,14 @@ const addPhoneButton = document.querySelector("#AddNewPhone");
 const phoneNumberListView = document.querySelector("#PhoneNumberListView");
 const addAddressButton = document.querySelector("#AddNewAddress");
 const addressListView = document.querySelector("#PDEAddressListView");
+const reportsToggle = document.querySelector("#ReportsNavbarDropdown");
+const reportsMenu = document.querySelector(".dropdown-menu[aria-labelledby='ReportsNavbarDropdown']");
+
+reportsToggle?.addEventListener("click", () => {
+  reportsMenu.hidden = !reportsMenu.hidden;
+  reportsMenu.classList.toggle("show", !reportsMenu.hidden);
+  reportsToggle.setAttribute("aria-expanded", String(!reportsMenu.hidden));
+});
 
 function normalize(value = "") {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
